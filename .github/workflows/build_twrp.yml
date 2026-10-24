@@ -48,21 +48,22 @@ jobs:
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
           lunch twrp_CL8-eng
-          make -j$(nproc) recoveryimage
+          make -j$(nproc) vendorbootimage 2>&1 | tail -60
           echo "=== IMAGES ==="
-          find out/target/product -name "*.img" | head -20
+          find out/target/product/CL8 -maxdepth 1 -name "*.img" -exec ls -la {} \;
 
       - name: Collect images
         if: always()
         run: |
-          mkdir -p ${{ github.workspace }}/out_imgs
-          cp -v ~/twrp/out/target/product/*/recovery.img ${{ github.workspace }}/out_imgs/ || true
-          cp -v ~/twrp/out/target/product/*/vendor_boot.img ${{ github.workspace }}/out_imgs/ || true
-          cp -v ~/twrp/out/target/product/*/boot.img ${{ github.workspace }}/out_imgs/ || true
-          ls -la ${{ github.workspace }}/out_imgs/ || true
-          find ~/twrp/out -maxdepth 6 -name "*.img" | head -30 || true
+          OUT=${{ github.workspace }}/out_imgs
+          mkdir -p $OUT
+          cp -v ~/twrp/out/target/product/CL8/*.img $OUT/ || true
+          echo "--- collected ---"
+          ls -la $OUT
+          echo "--- recovery root ---"
+          ls -la ~/twrp/out/target/product/CL8/recovery/root 2>/dev/null | head -40 || true
 
-      - name: Upload recovery image
+      - name: Upload images
         if: always()
         uses: actions/upload-artifact@v4
         with:
