@@ -53,16 +53,19 @@ jobs:
           find out/target/product -name "*.img" | head -20
 
       - name: Collect images
-        if: success() || failure()
+        if: always()
         run: |
           mkdir -p ${{ github.workspace }}/out_imgs
-          find ~/twrp/out/target/product -name "*.img" -exec cp -v {} ${{ github.workspace }}/out_imgs/ ; || true
-          ls -la ${{ github.workspace }}/out_imgs/
+          cp -v ~/twrp/out/target/product/*/recovery.img ${{ github.workspace }}/out_imgs/ || true
+          cp -v ~/twrp/out/target/product/*/vendor_boot.img ${{ github.workspace }}/out_imgs/ || true
+          cp -v ~/twrp/out/target/product/*/boot.img ${{ github.workspace }}/out_imgs/ || true
+          ls -la ${{ github.workspace }}/out_imgs/ || true
+          find ~/twrp/out -maxdepth 6 -name "*.img" | head -30 || true
 
       - name: Upload recovery image
-        if: success() || failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: twrp_CL8_img
           path: out_imgs/*
-          if-no-files-found: error
+          if-no-files-found: warn
