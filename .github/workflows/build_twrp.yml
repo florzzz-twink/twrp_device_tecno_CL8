@@ -49,11 +49,20 @@ jobs:
           export ALLOW_MISSING_DEPENDENCIES=true
           lunch twrp_CL8-eng
           make -j$(nproc) recoveryimage
-          find out -name "*.img" | head -20
+          echo "=== IMAGES ==="
+          find out/target/product -name "*.img" -exec ls -la {} ;
+
+      - name: Collect images
+        run: |
+          mkdir -p ${{ github.workspace }}/out_imgs
+          find ~/twrp/out/target/product -name "*.img" -newer ~/twrp/.repo/projects -exec cp -v {} ${{ github.workspace }}/out_imgs/ ; || true
+          cp -v ~/twrp/out/target/product/*/recovery.img ${{ github.workspace }}/out_imgs/ 2>/dev/null || true
+          cp -v ~/twrp/out/target/product/*/vendor_ramdisk.img ${{ github.workspace }}/out_imgs/ 2>/dev/null || true
+          ls -la ${{ github.workspace }}/out_imgs/
 
       - name: Upload recovery image
         uses: actions/upload-artifact@v4
         with:
           name: twrp_CL8_img
-          path: |
-            ~/twrp/out/target/product/CL8/*.img
+          path: out_imgs/*
+          if-no-files-found: error
