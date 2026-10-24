@@ -16,12 +16,12 @@ jobs:
       - name: Checkout device tree
         uses: actions/checkout@v4
         with:
-          path: device/tecno/CL8
+          path: device-tree
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 ccache
+          sudo apt-get install -y git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 ccache rsync
           mkdir -p ~/bin
           curl -s https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
           chmod a+x ~/bin/repo
@@ -35,6 +35,12 @@ jobs:
           repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-12.1
           repo sync -c -j4 --no-clone-bundle --no-tags
           df -h
+
+      - name: Place device tree
+        run: |
+          mkdir -p ~/twrp/device/tecno
+          rsync -a --delete "${{ github.workspace }}/device-tree/" ~/twrp/device/tecno/CL8/
+          ls ~/twrp/device/tecno/CL8
 
       - name: Build
         run: |
